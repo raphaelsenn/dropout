@@ -36,4 +36,25 @@ It can be inteerpreted as a way of reularizing a neural network by adding noise 
 
 ![image](/res/dropout_model_2.png)
 
+## PyTorch vs my dropout implemention
+
+* Pytorch's implementation of dropout randomly zeroes some of the elements of the input tensor with probability $p$.
+
+* My implementation of dropout randomly zeroes some of the elements of the input tensor with probability $1 - p$, so each unit is retained with a probability of $p$ (like in the original paper).
+
+### MNIST
+
+Results of my dropout implementation after 30 epochs of training. These match pretty much the results achived in the paper with the same architecture.
+
+```text
+(training set)  error: 0.003750 acc: 0.996250
+(test set)      error: 0.014700 acc: 0.985300
+```
+
+Results of my pytorch's dropout after 30 epochs of training
+```text
+(training set)  error: 0.004567 acc: 0.995433
+(test set)      error: 0.018000 acc: 0.982000
+```
+
 

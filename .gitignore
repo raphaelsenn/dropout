@@ -175,3 +175,5 @@ cython_debug/
 
 # ignore datasets
 data
+mnist
+cifar10

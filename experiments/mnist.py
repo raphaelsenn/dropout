@@ -3,6 +3,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from dropout.dropout import Dropout
 
 
 """
@@ -18,17 +19,84 @@ class NeuralNet(nn.Module):
     Error rate in paper: 1.25%
     """ 
     
-    def __init__(self) -> None:
+    def __init__(self, n_in: int, n_out: int, n_hidden: int=1024) -> None:
         super().__init__() 
-        
-        self.fc1 = nn.Linear(784, 1024, bias=True)
-        self.fc2 = nn.Linear(1024, 1024, bias=True)
-        self.fc3 = nn.Linear(1024, 1024, bias=True)
-        self.fc4 = nn.Linear(1024, 10, bias=True)
+        self.dropout1 = nn.Dropout(p=0.2) 
+        self.fc1 = nn.Linear(n_in, n_hidden, bias=True)
+
+        self.dropout2 = nn.Dropout(p=0.5) 
+        self.fc2 = nn.Linear(n_hidden, n_hidden, bias=True)
+
+        self.dropout3 = nn.Dropout(p=0.5) 
+        self.fc3 = nn.Linear(n_hidden, n_hidden, bias=True)
+
+        self.out = nn.Linear(n_hidden, n_out, bias=True)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        out = self.fc1(x)   # [N, 1024]
-        out = self.fc2(out) # [N, 1024]
-        out = self.fc3(out) # [N, 1024]
-        out = self.fc4(out) # [N, 10]
+        out = self.dropout1(x) 
+        out = self.fc1(out)     # [N, 1024]
+        out = F.relu(out) 
+
+        out = self.dropout2(out) 
+        out = self.fc2(out)     # [N, 1024]
+        out = F.relu(out) 
+        
+        out = self.dropout3(out) 
+        out = self.fc3(out)     # [N, 1024]
+        out = F.relu(out) 
+        
+        out = self.out(out)     # [N, 10]
+        return out
+
+
+
+class DropoutNN2(nn.Module):
+    """
+    Neural Network using pytorch's dropout technique
+    
+    Unit type: ReLU
+    Architecture: 3 layers, 1024 units
+    Error rate in paper: 1.25%
+    """ 
+    
+    def __init__(self, n_in: int, n_out: int, n_hidden: int=1024) -> None:
+        super().__init__() 
+        self.dropout1 = Dropout(p=0.8) 
+        self.fc1 = nn.Linear(n_in, n_hidden, bias=True)
+
+        self.dropout2 = Dropout(p=0.5) 
+        self.fc2 = nn.Linear(n_hidden, n_hidden, bias=True)
+
+        self.dropout3 = Dropout(p=0.5) 
+        self.fc3 = nn.Linear(n_hidden, n_hidden, bias=True)
+
+        self.out = nn.Linear(n_hidden, n_out, bias=True)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        if not self.training: 
+            out = self.fc1(x)       # [N, 1024]
+            out = F.relu(out) 
+
+            out = self.fc2(out)     # [N, 1024]
+            out = F.relu(out) 
+            
+            out = self.fc3(out)     # [N, 1024]
+            out = F.relu(out) 
+            
+            out = self.out(out)     # [N, 10]
+            return out
+        
+        out = self.dropout1(x) 
+        out = self.fc1(out)     # [N, 1024]
+        out = F.relu(out) 
+
+        out = self.dropout2(out) 
+        out = self.fc2(out)     # [N, 1024]
+        out = F.relu(out) 
+        
+        out = self.dropout3(out) 
+        out = self.fc3(out)     # [N, 1024]
+        out = F.relu(out) 
+        
+        out = self.out(out)     # [N, 10]
         return out
