@@ -9,6 +9,7 @@ class Dropout(nn.Module):
         self.in_place = in_place
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        if not self.training: return x
         p = torch.ones_like(x) * self.p
         r = torch.bernoulli(input=p)
         if self.in_place:

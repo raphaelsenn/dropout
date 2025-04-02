@@ -73,19 +73,6 @@ class DropoutNN2(nn.Module):
         self.out = nn.Linear(n_hidden, n_out, bias=True)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        if not self.training: 
-            out = self.fc1(x)       # [N, 1024]
-            out = F.relu(out) 
-
-            out = self.fc2(out)     # [N, 1024]
-            out = F.relu(out) 
-            
-            out = self.fc3(out)     # [N, 1024]
-            out = F.relu(out) 
-            
-            out = self.out(out)     # [N, 10]
-            return out
-        
         out = self.dropout1(x) 
         out = self.fc1(out)     # [N, 1024]
         out = F.relu(out) 
