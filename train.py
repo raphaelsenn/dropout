@@ -33,7 +33,8 @@ def train(
     
     model.train()
     
-    optimizer = torch.optim.Adam(params=model.parameters(), lr=lr)
+    optimizer = torch.optim.SGD(params=model.parameters(), lr=0.1, momentum=0.95)
+    # optimizer = torch.optim.Adam(params=model.parameters(), lr=lr)
     criterion = nn.CrossEntropyLoss()
     
     # for epoch in range(epochs):

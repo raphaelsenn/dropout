@@ -16,6 +16,9 @@ What is the benefit of this repository? Just to teach myself how dropout works.
 * **Key idea:** Dropout is a technique that addressed both of these issues (preventing overfitting and combining different models). The term "dropout" refers to (randomly) dropping out units (input + hidden, along with thier connections) from the neural network during training.
 It can be inteerpreted as a way of reularizing a neural network by adding noise to its hidden units.
 
+* **In practice:** Most Deep Learning libraries automatically scale up the output of each
+neuron during training by 1/p, such that no changes are required during inference.
+
 ## How does dropout work?
 
 * In the simplest case, each unit is retained with a fixed probability $p \in (0, 1)$ independent of other units. $p=0.5$ seems to be close to optimal for a wide range of networks and tasks. For input units, however, the optimal probability of retention i usually closer to 1 then to 0.5.
@@ -27,6 +30,8 @@ It can be inteerpreted as a way of reularizing a neural network by adding noise 
 * Training a neural network with dropout can be seen as training a collection of $2^n$ thinned networks with extensive weight sharing.
 
 * If a unit is retained with probability $p$, the outgoing weight of that unit are mutliplied by $p$ at test time.
+
+* **NOTE** that dropout is only applied during training, but not druing the infernce/evaluation stage.
 
 ![image](/res/figure_2.png)
 
@@ -44,11 +49,18 @@ It can be inteerpreted as a way of reularizing a neural network by adding noise 
 
 ### MNIST
 
+| Method | Unit Type | Architecture | Error (%) |
+| ------------------------------------- | --------- | ------------ | --------- |
+| Dropout NN (no dropout) | ReLU | 3 layers, 1024 units | TODO: | 
+| Dropout NN (pytorch built in dropout) | ReLU | 3 layers, 1024 units | 1.47 |
+| Dropout NN (DIY dropout) | ReLU | 3 layers, 1024 units | 1.8 | 
+
+
 Results of my dropout implementation after 30 epochs of training. These match pretty much the results achived in the paper with the same architecture.
 
 ```text
-(training set)  error: 0.003750 acc: 0.996250
-(test set)      error: 0.014700 acc: 0.985300
+(training set)  error: 0.002783 acc: 0.997217
+(test set)      error: 0.013500 acc: 0.986500
 ```
 
 Results of my pytorch's dropout after 30 epochs of training
@@ -58,3 +70,6 @@ Results of my pytorch's dropout after 30 epochs of training
 ```
 
 
+## Notes
+
+* **NOTE** that dropout is only applied during training, but not druing the infernce/evaluation stage.
