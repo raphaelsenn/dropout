@@ -1,4 +1,3 @@
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -6,11 +5,7 @@ import torch.nn.functional as F
 from dropout.dropout import Dropout
 
 
-"""
-Neural Network using pytorch's dropout technique
-"""
-
-class NeuralNet(nn.Module):
+class DropoutMLPtorch(nn.Module):
     """
     Neural Network using pytorch's dropout technique
     
@@ -50,7 +45,7 @@ class NeuralNet(nn.Module):
 
 
 
-class DropoutNN2(nn.Module):
+class DropoutMLPdiy(nn.Module):
     """
     Neural Network using pytorch's dropout technique
     

@@ -177,3 +177,6 @@ cython_debug/
 data
 mnist
 cifar10
+
+# ignore personal notes
+notes_dropout.ipynb
