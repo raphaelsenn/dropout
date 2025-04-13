@@ -43,8 +43,9 @@ def train(
         ) -> None:
     model.train()
     
-    optimizer = torch.optim.SGD(params=model.parameters(), lr=lr, momentum=momentum)
-    # optimizer = torch.optim.Adam(params=model.parameters(), lr=lr)
+    # optimizer = torch.optim.SGD(params=model.parameters(), lr=lr, momentum=momentum)
+    optimizer = torch.optim.Adam(params=model.parameters(), lr=lr)
+    # adam: 0.0001 
     criterion = nn.CrossEntropyLoss()
     
     # for epoch in range(epochs):
@@ -83,18 +84,18 @@ def train(
 
 if __name__ == '__main__':
     DATASET = 'cifar10'                 # mnist or cifar-10
-    MODEL = 'torch'                     # torch or diy (diy = do it yourself)
+    MODEL = 'diy'                     # torch or diy (diy = do it yourself)
     model = None                        # the model
-    lr = 0.0001                          # learning rate
+    lr = 0.0001                         # learning rate
     momentum = 0.95                     # momentum
-    epochs = 48                         # number of iterations
+    epochs = 4                         # number of iterations
     batch_size = 64                     # batch size
     verbose = True                      # printing performance while training
     seed = 42                           # random seed for reproducability
-    num_threads = 8                     # number of threads 
-
+    num_threads = 10                    # number of threads 
     torch.manual_seed(seed)
-    torch.set_num_threads(8)
+    torch.set_num_threads(num_threads)
+    # beast cifar 0.0001
 
     if torch.backends.mps.is_available():
         device = torch.device('mps')
@@ -134,7 +135,8 @@ if __name__ == '__main__':
             model = ConvNetDropoutDIY()
         
         transform = transforms.Compose(
-            [transforms.ToTensor()]) 
+            [transforms.ToTensor(),
+             transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))]) 
 
         cifar10_train = CIFAR10(
             root='cifar10/',

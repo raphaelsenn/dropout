@@ -5,7 +5,7 @@ import torch.nn as nn
 class Dropout(nn.Module):
     def __init__(self, p: float=0.5, inplace: bool=False):
         super().__init__()
-        self.p = torch.Tensor([p])
+        self.register_buffer('p', torch.tensor([p])) 
         self.inplace = inplace
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
