@@ -1,0 +1,1 @@
+from maxnorm.maxnorm import MaxNorm

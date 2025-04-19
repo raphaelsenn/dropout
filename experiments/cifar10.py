@@ -6,8 +6,11 @@ from dropout.dropout import Dropout
 
 class ConvNetDropoutTorch(nn.Module):
     """
-    Convolutional neural network using torch.nn.Dropout(p) in fc-layers.
-        -> Good generalization 
+    One of the deep convolutional neural networks described in the paper (+ dropout).
+    
+    Using dropout from PyTorch
+
+    Error from the paper on CIFAR-10: 12.61% 
     """ 
     
     def __init__(self) -> None:
@@ -45,6 +48,8 @@ class ConvNetDropoutTorch(nn.Module):
 
         self.out = nn.Linear(2048, 10)
 
+        self.initialize_weights()
+
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         out = self.dropout_input(x) 
         out = self.conv1(out)
@@ -56,13 +61,33 @@ class ConvNetDropoutTorch(nn.Module):
         out = self.out(out)
         return out
     
+    def initialize_weights(self) -> None:
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                # dense unifrom, sigma=0.01
+                nn.init.uniform_(m.weight, a=-0.01, b=0.01)
+
+                if m.bias is not None:
+                    nn.init.constant_(m.bias, val=0.0)
+            
+            elif isinstance(m, nn.Linear):
+                # dense unifrom sqrt fan_in, sigma=1.0
+                bound = 1.0 / ((m.in_features) ** 0.5)
+                nn.init.uniform_(m.weight, a=-bound, b=bound)
+
+                if m.bias is not None:
+                    nn.init.constant_(m.bias, val=0.0)
+
 
 class ConvNetDropoutDIY(nn.Module):
     """
-    Convolutional neural network using torch.nn.Dropout(p) in fc-layers.
-        -> Good generalization 
+    One of the deep convolutional neural networks described in the paper (+ dropout).
+
+    Using my own dropout method.
+
+    Error from the paper on CIFAR-10: 12.61%
     """ 
-    
+ 
     def __init__(self) -> None:
         super().__init__() 
 

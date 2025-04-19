@@ -7,11 +7,33 @@ from torch.utils.data import DataLoader
 import torchvision.transforms as transforms
 from torchvision.datasets import MNIST, CIFAR10
 
+from maxnorm.maxnorm import MaxNorm                     # MaxNorm for regularization
+
 from experiments.mnist import DropoutMLPtorch           # uses pytorch's nn.Dropout method
 from experiments.mnist import DropoutMLPdiy             # uses diy implementation of dropout
 
 from experiments.cifar10 import ConvNetDropoutTorch     # uses pytorch's nn.Dropout method
 from experiments.cifar10 import ConvNetDropoutDIY       # uses diy implementation of dropout
+
+# -----------------------------------------------------------------------------
+# Settings
+# -----------------------------------------------------------------------------
+
+DATASET = 'cifar10'           # mnist or cifar10
+DROPOUT = 'torch'           # torch or diy
+ROOT_DATA = DATASET + '/'
+
+epochs = 72
+learning_rate = 0.001
+momentum = 0.95
+batch_size = 64
+seed = 42
+num_threads = 10
+device = torch.device('mps')
+verbose = True
+
+torch.manual_seed(seed=seed)
+torch.set_num_threads(num_threads)
 
 
 def evaluate(
@@ -43,11 +65,10 @@ def train(
         ) -> None:
     model.train()
     
-    # optimizer = torch.optim.SGD(params=model.parameters(), lr=lr, momentum=momentum)
-    optimizer = torch.optim.Adam(params=model.parameters(), lr=lr)
-    # adam: 0.0001 
+    optimizer = torch.optim.SGD(params=model.parameters(), lr=lr, momentum=momentum)
     criterion = nn.CrossEntropyLoss()
-    
+    norm = MaxNorm(max_value=4)
+
     # for epoch in range(epochs):
     for epoch in range(epochs):
         total_loss, error = 0.0, 0.0
@@ -73,6 +94,10 @@ def train(
 
             # update parameters
             optimizer.step()
+
+            # apply max norm constraint
+            model.apply(norm)
+        
         end_time = time.monotonic()
         if verbose:
             total_loss = total_loss / len(dataloader.dataset) 
@@ -83,27 +108,9 @@ def train(
 
 
 if __name__ == '__main__':
-    DATASET = 'cifar10'                 # mnist or cifar-10
-    MODEL = 'diy'                     # torch or diy (diy = do it yourself)
-    model = None                        # the model
-    lr = 0.0001                         # learning rate
-    momentum = 0.95                     # momentum
-    epochs = 4                         # number of iterations
-    batch_size = 64                     # batch size
-    verbose = True                      # printing performance while training
-    seed = 42                           # random seed for reproducability
-    num_threads = 10                    # number of threads 
-    torch.manual_seed(seed)
-    torch.set_num_threads(num_threads)
-    # beast cifar 0.0001
-
-    if torch.backends.mps.is_available():
-        device = torch.device('mps')
- 
-    else: device = torch.device('cpu')
 
     if DATASET == 'mnist':  # training on minst
-        if MODEL == 'torch': 
+        if DROPOUT == 'torch': 
             model = DropoutMLPtorch(n_in=28*28, n_hidden=1024, n_out=10)
         else:  
             model = DropoutMLPdiy(n_in=28*28, n_hidden=1024, n_out=10)
@@ -129,7 +136,7 @@ if __name__ == '__main__':
         dataloader_test = DataLoader(mnist_test, batch_size=batch_size, shuffle=True)
 
     else: # training on cifar10
-        if MODEL == 'torch': 
+        if DROPOUT == 'torch': 
             model = ConvNetDropoutTorch()
         else:  
             model = ConvNetDropoutDIY()
@@ -154,17 +161,17 @@ if __name__ == '__main__':
         dataloader_test = DataLoader(cifar10_test, batch_size=batch_size, shuffle=True)
 
     model.to(device)
-
+    print(f'Using device: {device}\nStart training on dataset: {DATASET}')
 
     # finally start training on mnist
     train(
         model=model,
         dataloader=dataloader_train,
         epochs=epochs,
-        lr=lr,
+        lr=learning_rate,
         momentum=momentum,
         device=device,
-        verbose=True)
+        verbose=verbose)
     
     # evaluating 
     acc_train, error_train = evaluate(model, dataloader_train, device=device)
