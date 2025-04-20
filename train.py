@@ -4,9 +4,6 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
-import torchvision.transforms as transforms
-from torchvision.datasets import MNIST, CIFAR10
-
 from maxnorm.maxnorm import MaxNorm                     # MaxNorm for regularization
 
 from experiments.mnist import DropoutMLPtorch           # uses pytorch's nn.Dropout method
@@ -15,21 +12,22 @@ from experiments.mnist import DropoutMLPdiy             # uses diy implementatio
 from experiments.cifar10 import ConvNetDropoutTorch     # uses pytorch's nn.Dropout method
 from experiments.cifar10 import ConvNetDropoutDIY       # uses diy implementation of dropout
 
-from load_preprocess_data import load_cifar10
+from experiments.load_preprocess_data import load_cifar10, load_cifar10_zca, load_mnist
 
 # -----------------------------------------------------------------------------
 # Settings
 # -----------------------------------------------------------------------------
 
-DATASET = 'cifar10'           # mnist or cifar10
-DROPOUT = 'torch'           # torch or diy
+DATASET = 'cifar10'             # mnist or cifar10
+DROPOUT = 'torch'               # torch or diy
 ROOT_DATA = DATASET + '/'
 
-epochs = 32 
-learning_rate = 0.001
-momentum = 0.95
-batch_size = 64
-seed = 42
+epochs = 72                     # number of iterations
+learning_rate = 0.001           # learning rate
+momentum = 0.95                 # momentum for SGD
+lamb = 0.001                    # l2 penalty on the weights
+batch_size = 64                 # batch size
+seed = 42                       # random seed
 num_threads = 10
 device = torch.device('mps')
 verbose = True
@@ -91,6 +89,9 @@ def train(
             total_loss += loss.item()
             error += torch.sum(y_batch != torch.argmax(pred, dim=1))
 
+            l2_norm = sum(torch.sum(torch.pow(p, 2)) for p in model.parameters())
+            loss += lamb * l2_norm
+
             # backpropagation
             loss.backward()
 
@@ -117,53 +118,17 @@ if __name__ == '__main__':
         else:  
             model = DropoutMLPdiy(n_in=28*28, n_hidden=1024, n_out=10)
 
-        # loading and transforming the mnist dataset
-        transform = transforms.Compose(
-            [transforms.ToTensor(),                     # greyscale [0, 255] -> [0, 1]
-            transforms.Lambda(lambda x: x.view(-1))])   # shape [1, 28, 28] -> [1, 784]
-
-        mnist_train = MNIST(
-            root='mnist/',
-            train=True,
-            download=True,
-            transform=transform)
-        
-        mnist_test = MNIST(
-            root='mnist/',
-            train=False,
-            download=True,
-            transform=transform)
-        
-        dataloader_train = DataLoader(mnist_train, batch_size=batch_size, shuffle=True)
-        dataloader_test = DataLoader(mnist_test, batch_size=batch_size, shuffle=True)
+        # loading mnist
+        dataloader_train, dataloader_test = load_mnist() 
 
     else: # training on cifar10
         if DROPOUT == 'torch': 
             model = ConvNetDropoutTorch()
         else:  
             model = ConvNetDropoutDIY()
-        
-        transform = transforms.Compose(
-            [transforms.ToTensor(),
-             transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))]) 
 
-        cifar10_train = CIFAR10(
-            root='cifar10/',
-            train=True,
-            download=True,
-            transform=transform)
-        
-        cifar10_test = CIFAR10(
-            root='cifar10/',
-            train=False,
-            download=True,
-            transform=transform)
-        
-        dataloader_train = DataLoader(cifar10_train, batch_size=batch_size, shuffle=True)
-        dataloader_test = DataLoader(cifar10_test, batch_size=batch_size, shuffle=True)
-
-        dataloader_train, dataloader_test = load_cifar10() 
-        
+        # loading cifar10        
+        dataloader_train, dataloader_test = load_cifar10_zca() 
 
     model.to(device)
     print(f'Using device: {device}\nStart training on dataset: {DATASET}')

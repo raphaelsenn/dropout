@@ -96,20 +96,19 @@ Error from the paper is $1.25$% with the same architecture.
 
 Used settings:
 ```python
-epochs = 48
+epochs = 72
 batch_size = 64
 torch.manual_seed(seed=42)
 criterion = nn.CrossEntropyLoss()
-optimizer = torch.optim.SGD(lr=0.01, momentum=0.95)
+optimizer = torch.optim.SGD(lr=0.001, momentum=0.95)
 ```
-
 
 Evaluated on the test set:
 
-| Method | Error (%) |
-| ------- | -------- |  
-| Conv Net + max pooling + dropout fully connected layers | TODO |
-| Conv Net + max pooling + dropout in all layers | TODO |
+| Method | Error (%) |  Accuracy (%) |
+| ------- | -------- | ------------- | 
+| Conv Net + max pooling + dropout fully connected layers | 14.83 |  85.17 |
+| Conv Net + max pooling + dropout in all layers | 14.87 |  85.13 |
 
 Conv Net + max pooling (no dropout)
 ```text
