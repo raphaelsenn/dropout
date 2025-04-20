@@ -6,6 +6,18 @@ Implementation of the dropout technique described in the paper: [Dropout: A Simp
 What is the benefit of this repository? Just to teach myself how dropout works
 (its pretty simple) :D
 
+## Usage
+
+```python
+import torch
+from dropout.dropout import Dropout
+
+m = Dropout(p=0.8)  # unit is retained with probability 0.8
+input = torch.randn(20, 16)
+output = m(input)
+```
+
+
 ## Notes
 
 ### Why do we need dropout?
