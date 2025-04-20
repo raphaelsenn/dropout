@@ -5,62 +5,66 @@ from torch.utils.data import Dataset, TensorDataset, DataLoader
 import torchvision.transforms as transforms
 
 import numpy as np
+from tensorflow.keras.datasets import cifar10
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 
+def preprocess_cifar10():
+    # load cifar10 dataset 
+    (X_train, y_train), (X_test, y_test) = cifar10.load_data()
 
-def CustomCIFAR10(Dataset):
-    """CIFAR-10 dataset with ZCA whitenig"""
+    # normalize 
+    X_train = X_train.astype('float32') / 255.0
+    X_test  = X_test.astype('float32') / 255.0
+    
+    # apply ZCA whitening
+    datagen_train = ImageDataGenerator(zca_whitening=True)
+    datagen_test = ImageDataGenerator(zca_whitening=True)
 
-    def __init__(self, path: str) -> None:
-        data = np.load(path)
-        self.images = torch.from_numpy(data['images']).float()
-        self.labels = torch.from_numpy(data['labels']).long()
+    datagen_train.fit(X_train)
+    X_train_zca = []
 
-    def __len__(self) -> int:
-        return len(self.labels)
+    for x_batch, _ in datagen_train.flow(X_train, y_train, batch_size=128, shuffle=False):
+        X_train_zca.append(x_batch)
+        if len(X_train_zca) * 128 >= len(X_train):
+            break
+    
+    datagen_test.fit(X_test)
+    X_test_zca = []
+    for x_batch, _ in datagen_test.flow(X_test, y_test, batch_size=128, shuffle=False):
+        X_test_zca.append(x_batch)
+        if len(X_test_zca) * 128 >= len(X_test):
+            break
+    
+    X_train_zca = np.concatenate(X_train_zca, axis=0)[:len(X_train)]
+    X_test_zca = np.concatenate(X_test_zca, axis=0)[:len(X_test)]
 
-    def __getitem__(self, idx: int) -> tuple[torch.Tensor, int]:
-        return self.images[idx], self.labels[idx]
+    # Convert to PyTorch format: (N, C, H, W)
+    X_train = torch.from_numpy(X_train_zca).permute(0, 3, 1, 2).float()
+    y_train = torch.from_numpy(y_train.squeeze()).long()
+    
+    # Convert to PyTorch format: (N, C, H, W)
+    X_test = torch.from_numpy(X_test_zca).permute(0, 3, 1, 2).float()
+    y_test = torch.from_numpy(y_test.squeeze()).long()
 
-
-def zca_whitening(
-        X: torch.Tensor,
-        epsilon: float=1.0
-        ) -> torch.Tensor:
-    N = X.shape[0] 
-    X = X.reshape(-1, 3 * 32 * 32)  # [N, 3, 32, 32] -> [N, 3072]
-
-    X = X - X.mean(axis=0)
-
-    cov = np.cov(X, rowvar=False)
-
-    U, S, V = np.linalg.svd(cov)
-
-
-    ZCA_matrix = U @ np.diag(1.0 / np.sqrt(S + epsilon)) @ U.T
-    X_zca = X @ ZCA_matrix.T
-
-    X_zca_tensor = torch.from_numpy(X_zca).view(N, 3, 32, 32).float()
-    return X_zca_tensor
-
-    # X_ZCA = U.dot(np.diag(1.0/np.sqrt(S + epsilon))).dot(U.T).dot(X.T).T
-    # X_ZCA_rescaled = (X_ZCA - X_ZCA.min()) / (X_ZCA.max() - X_ZCA.min()) 
-    # return torch.from_numpy(X_ZCA).view((N, 3, 32, 32)).float()
-
-# transform = transforms.Compose([transforms.ToTensor()])
-transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-cifar10_train = torchvision.datasets.CIFAR10(root='cifar10/', train=True, download=True, transform=transform)
-cifar10_test = torchvision.datasets.CIFAR10(root='cifar10/', train=False, download=True, transform=transform)
-
-X_train, X_test = cifar10_train.data, cifar10_test.data
-y_train, y_test = cifar10_train.targets, cifar10_test.targets
-
-X_train_zca = zca_whitening(X_train)
-y_train = torch.tensor(y_train)
-
-X_test_zca = zca_whitening(X_test)
-y_test = torch.tensor(y_test)
+    torch.save((X_train, y_train), 'cifar10_zca_train.pt')
+    torch.save((X_test, y_test), 'cifar10_zca_test.pt')
 
 
-torch.save((X_train_zca, y_train), 'cifar10_train_zca.pt')
-torch.save((X_test_zca, y_test), 'cifar10_test_zca.pt')
+def load_cifar10():
+    X_train, y_train = torch.load('cifar10_zca_train.pt', weights_only=False)
+    X_test, y_test = torch.load('cifar10_zca_test.pt', weights_only=False)
+    
+    print(X_train.shape, y_train.shape) 
+    print(X_test.shape, y_test.shape) 
+    dataset_test = TensorDataset(X_test, y_test)
+    dataset_train = TensorDataset(X_train, y_train)
+
+
+    dataloader_train = DataLoader(dataset_train, batch_size=64, shuffle=True)
+    dataloader_test = DataLoader(dataset_test, batch_size=64, shuffle=True)
+    
+    return dataloader_train, dataloader_test
+
+
+# preprocess_cifar10()
