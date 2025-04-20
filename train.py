@@ -23,7 +23,7 @@ DATASET = 'cifar10'           # mnist or cifar10
 DROPOUT = 'torch'           # torch or diy
 ROOT_DATA = DATASET + '/'
 
-epochs = 72
+epochs = 32 
 learning_rate = 0.001
 momentum = 0.95
 batch_size = 64
@@ -159,6 +159,19 @@ if __name__ == '__main__':
         
         dataloader_train = DataLoader(cifar10_train, batch_size=batch_size, shuffle=True)
         dataloader_test = DataLoader(cifar10_test, batch_size=batch_size, shuffle=True)
+        
+        
+        from torch.utils.data import TensorDataset, DataLoader
+
+        X_train, y_train = torch.load('cifar10_train_zca.pt', weights_only=False)
+        dataset_train = TensorDataset(X_train, y_train)
+        
+        X_test, y_test = torch.load('cifar10_test_zca.pt', weights_only=False)
+        dataset_test = TensorDataset(X_test, y_test)
+
+        dataloader_train = DataLoader(dataset_train, batch_size=64, shuffle=True)
+        dataloader_test = DataLoader(dataset_test, batch_size=64, shuffle=True)
+
 
     model.to(device)
     print(f'Using device: {device}\nStart training on dataset: {DATASET}')
