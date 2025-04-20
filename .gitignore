@@ -178,5 +178,8 @@ data
 mnist
 cifar10
 
+*.pt
+
 # ignore personal notes
 notes_dropout.ipynb
+

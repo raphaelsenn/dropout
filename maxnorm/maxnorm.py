@@ -23,8 +23,8 @@ class MaxNorm(object):
         self.dim = dim
 
     def __call__(self, module: nn.Module):
-        if hasattr(module, 'weight'):
-            w = module.weight.data
-            norms = torch.norm(w, dim=self.dim, keepdim=True) 
-            desired = torch.clamp(norms, 0, self.max_value)
-            module.weight.data.mul_(desired / (BASE_EPSILON + norms))
+        if isinstance(module, (nn.Linear, nn.Conv2d)):
+            with torch.no_grad():
+                norms = torch.norm(module.weight, dim=self.dim, keepdim=True) 
+                desired = torch.clamp(norms, 0, self.max_value)
+                module.weight.data.mul_(desired / (BASE_EPSILON + norms))
