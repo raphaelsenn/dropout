@@ -4,13 +4,13 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
-from maxnorm.maxnorm import MaxNorm                     # MaxNorm for regularization
+from experiments.maxnorm import MaxNorm                         # MaxNorm for regularization
 
-from experiments.mnist import DropoutMLPtorch           # uses pytorch's nn.Dropout method
-from experiments.mnist import DropoutMLPdiy             # uses diy implementation of dropout
+from experiments.neural_networks import DropoutMLPtorch         # uses pytorch's nn.Dropout method
+from experiments.neural_networks import DropoutMLPdiy           # uses diy implementation of dropout
 
-from experiments.cifar10 import ConvNetDropoutTorch     # uses pytorch's nn.Dropout method
-from experiments.cifar10 import ConvNetDropoutDIY       # uses diy implementation of dropout
+from experiments.neural_networks import ConvNetDropoutTorch     # uses pytorch's nn.Dropout method
+from experiments.neural_networks import ConvNetDropoutDIY       # uses diy implementation of dropout
 
 from experiments.preprocess_load_data import load_cifar10, load_mnist
 
@@ -29,7 +29,7 @@ lamb = 0.001                    # l2 penalty on the weights
 batch_size = 64                 # batch size
 seed = 42                       # random seed
 num_threads = 10
-device = torch.device('mps')
+device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 verbose = True
 
 torch.manual_seed(seed=seed)
@@ -124,7 +124,7 @@ if __name__ == '__main__':
             model = DropoutMLPdiy(n_in=28*28, n_hidden=1024, n_out=10)
 
         # loading mnist
-        dataloader_train, dataloader_test = load_mnist() 
+        dataloader_train, dataloader_test = load_mnist(ROOT_DATA)
 
     else: # training on cifar10
         if DROPOUT == 'torch': 
@@ -133,7 +133,7 @@ if __name__ == '__main__':
             model = ConvNetDropoutDIY()
 
         # loading cifar10        
-        dataloader_train, dataloader_test = load_cifar10() 
+        dataloader_train, dataloader_test = load_cifar10(ROOT_DATA)
 
     model.to(device)
     print(f'Using device: {device}\nStart training on dataset: {DATASET}')

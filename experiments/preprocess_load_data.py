@@ -9,12 +9,15 @@ import torchvision.transforms as transforms
 from torchvision.datasets import MNIST, CIFAR10
 
 
-def zca_whitening(X: torch.Tensor, epsilon: float=0.001) -> None:
+def zca_whitening(X: torch.Tensor, epsilon: float=10e-7) -> None:
     """
-    Applies ZCA whitening on the CIFAR-10 dataset.
+    Applies contrast normalization and ZCA whitening on the CIFAR-10 dataset.
     """
-    # normalizing
+    # contrast normalization 
     X = X / 255.0
+    mean = X.mean(axis=0)
+    std = X.std(axis=0)
+    X = (X - mean) / std
 
     # [N, 32, 32, 3] -> [N, 3072]
     X = X.reshape(-1, 3 * 32 * 32)
@@ -37,27 +40,21 @@ def zca_whitening(X: torch.Tensor, epsilon: float=0.001) -> None:
     return torch.from_numpy(X_ZCA.reshape(X_ZCA.shape[0], 32, 32, 3).transpose(0, 3, 1, 2))
 
 
-def load_cifar10(batch_size: int=64) -> tuple[DataLoader, DataLoader]:
+def load_cifar10(root: str, batch_size: int=64) -> tuple[DataLoader, DataLoader]:
     """
     Loads the CIFAR-10 dataset (with ZCA whitening) and returns a tuple of DataLoaders 
     for the training and test sets.
     """ 
     
-    transform = transforms.Compose(
-        [transforms.ToTensor(),
-            transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))]) 
-
     cifar10_train = CIFAR10(
-        root='cifar10/',
+        root=root,
         train=True,
-        download=True,
-        transform=transform)
+        download=True)
     
     cifar10_test = CIFAR10(
-        root='cifar10/',
+        root=root,
         train=False,
-        download=True,
-        transform=transform)
+        download=True)
 
     if not os.path.isfile('cifar10_train.pt'):
         print(f'Applying ZCA whitening to CIFAR10_train') 
@@ -83,7 +80,7 @@ def load_cifar10(batch_size: int=64) -> tuple[DataLoader, DataLoader]:
     return dataloader_train, dataloader_test
 
 
-def load_mnist(batch_size: int=64) -> tuple[DataLoader, DataLoader]:
+def load_mnist(root: str, batch_size: int=64) -> tuple[DataLoader, DataLoader]:
     """
     Loads the MNIST dataset and returns a tuple of DataLoaders 
     for the training and test sets.
@@ -94,13 +91,13 @@ def load_mnist(batch_size: int=64) -> tuple[DataLoader, DataLoader]:
         transforms.Lambda(lambda x: x.view(-1))])   # shape [1, 28, 28] -> [1, 784]
 
     mnist_train = MNIST(
-        root='mnist/',
+        root=root,
         train=True,
         download=True,
         transform=transform)
         
     mnist_test = MNIST(
-        root='mnist/',
+        root=root,
         train=False,
         download=True,
         transform=transform)

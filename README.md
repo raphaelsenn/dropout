@@ -12,6 +12,7 @@ What is the benefit of this repository? Just to teach myself how dropout works
 import torch
 from dropout.dropout import Dropout
 
+
 m = Dropout(p=0.8)  # unit is retained with probability 0.8
 input = torch.randn(20, 16)
 output = m(input)
@@ -101,15 +102,16 @@ Evaluated on the test set:
 | Dropout NN (pytorch built in dropout) | ReLU | 3 layers, 1024 units | 1.23 | 98.77 |
 | Dropout NN (DIY dropout) | ReLU | 3 layers, 1024 units | 1.26 | 98.74 |
 
-Error from the paper is $1.25$% with the same architecture.
+Error from the paper is $1.25$% with the same architecture and ~hyperparameters.
 
 
 ### CIFAR-10
 
 Used settings:
 ```python
-epochs = 72
+epochs = 48 
 batch_size = 64
+epsilon = 10e-7 # ZCA whitening
 torch.manual_seed(seed=42)
 criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.SGD(lr=0.001, momentum=0.95)
@@ -119,22 +121,20 @@ Evaluated on the test set:
 
 | Method | Error (%) |  Accuracy (%) |
 | ------- | -------- | ------------- | 
-| Conv Net + max pooling + dropout fully connected layers | 14.83 |  85.17 |
-| Conv Net + max pooling + dropout in all layers | 14.87 |  85.13 |
+| Conv Net + max pooling + dropout fully connected layers (torch) | 15.31 |  84.69 |
+| Conv Net + max pooling + dropout fully connected layers (diy) | 15.91  |  84.09 |
 
-Conv Net + max pooling (no dropout)
-```text
-(train report)  error: 0.086580 acc: 0.913420
-(test report)   error: 0.261700 acc: 0.738300
-```
+Error from the paper is $14.32$% with the same architecture and ~hyperparameters.
 
 ## Citations
 
 ```bibtex
 @article{srivastava2014dropout,
-    title   =   "Dropout: A Simple Way to Prevent Neural Networks from Overfitting",
-    author  =   "Nitish Srivastava, Geoffrey Hinton, Alex Krizhevsky, Ilya Sutskever, Ruslan Salakhutdinov",
-    year    =   "2014",
-    journal = "Journal of Machine Learning Research"
+    title   =   {{Dropout: A Simple Way to Prevent Neural Networks from Overfitting}},
+    author  =   {Nitish Srivastava and Geoffrey Hinton and Alex Krizhevsky and Ilya Sutskever and Ruslan Salakhutdinov},
+    journal = {Journal of Machine Learning Research},
+    volume={15},
+    pages={1929--1958},
+    year    =   {2014}
 }
 ```
