@@ -111,10 +111,12 @@ Used settings:
 ```python
 epochs = 48 
 batch_size = 64
-epsilon = 10e-7 # ZCA whitening
+epsilon = 10e-7         # ZCA whitening
+lamb = 0.001            # L2 regularization
 torch.manual_seed(seed=42)
 criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.SGD(lr=0.001, momentum=0.95)
+MaxNorm(max_value=4)    # max-norm weight constraint
 ```
 
 Evaluated on the test set:
