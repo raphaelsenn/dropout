@@ -12,7 +12,7 @@ from experiments.mnist import DropoutMLPdiy             # uses diy implementatio
 from experiments.cifar10 import ConvNetDropoutTorch     # uses pytorch's nn.Dropout method
 from experiments.cifar10 import ConvNetDropoutDIY       # uses diy implementation of dropout
 
-from experiments.load_preprocess_data import load_cifar10, load_cifar10_zca, load_mnist
+from experiments.preprocess_load_data import load_cifar10, load_mnist
 
 # -----------------------------------------------------------------------------
 # Settings
@@ -22,7 +22,7 @@ DATASET = 'cifar10'             # mnist or cifar10
 DROPOUT = 'torch'               # torch or diy
 ROOT_DATA = DATASET + '/'
 
-epochs = 72                     # number of iterations
+epochs = 8                     # number of iterations
 learning_rate = 0.001           # learning rate
 momentum = 0.95                 # momentum for SGD
 lamb = 0.001                    # l2 penalty on the weights
@@ -42,13 +42,16 @@ def evaluate(
         device: torch.device
         ) -> tuple[float, float]:
     model.eval() 
-    correct = 0 
+    
+    correct = 0
     with torch.no_grad():
         for inputs, targets in dataloader:
             inputs, targets = inputs.to(device), targets.to(device) 
             preds = model(inputs)
             correct += torch.sum(targets == torch.argmax(preds, dim=1))
+
     model.train()
+
     acc = correct / len(dataloader.dataset)
     error = 1 - acc
     return acc, error
@@ -69,11 +72,12 @@ def train(
     criterion = nn.CrossEntropyLoss()
     norm = MaxNorm(max_value=4)
 
-    # for epoch in range(epochs):
     for epoch in range(epochs):
-        total_loss, error = 0.0, 0.0
+
+        total_loss, correct = 0.0, 0.0
         start_time = time.monotonic()
         for X_batch, y_batch in dataloader:
+            # move tensors to device
             X_batch, y_batch = X_batch.to(device), y_batch.to(device)
             
             # reset gradients 
@@ -84,11 +88,12 @@ def train(
             
             # calculate cross-entropy
             loss = criterion(pred, y_batch)
-            
-            # error measures (+loss) 
             total_loss += loss.item()
-            error += torch.sum(y_batch != torch.argmax(pred, dim=1))
+            
+            # error measures
+            correct += torch.sum(y_batch == torch.argmax(pred, dim=1))
 
+            # apply L2 regularization
             l2_norm = sum(torch.sum(torch.pow(p, 2)) for p in model.parameters())
             loss += lamb * l2_norm
 
@@ -104,8 +109,8 @@ def train(
         end_time = time.monotonic()
         if verbose:
             total_loss = total_loss / len(dataloader.dataset) 
-            total_error = error / len(dataloader.dataset)
-            total_acc = 1 - total_error 
+            total_acc = correct / len(dataloader.dataset)
+            total_error = 1 - total_acc 
             epoch_time = end_time - start_time
             print(f'epoch: {epoch}\ttime: {epoch_time:.02f}s\tloss: {total_loss:.04f}\terror: {total_error:.04f}\tacc: {total_acc:.04f}')
 
@@ -128,7 +133,7 @@ if __name__ == '__main__':
             model = ConvNetDropoutDIY()
 
         # loading cifar10        
-        dataloader_train, dataloader_test = load_cifar10_zca() 
+        dataloader_train, dataloader_test = load_cifar10() 
 
     model.to(device)
     print(f'Using device: {device}\nStart training on dataset: {DATASET}')
