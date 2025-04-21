@@ -102,7 +102,7 @@ Evaluated on the test set:
 | Dropout NN (pytorch built in dropout) | ReLU | 3 layers, 1024 units | 1.23 | 98.77 |
 | Dropout NN (DIY dropout) | ReLU | 3 layers, 1024 units | 1.26 | 98.74 |
 
-Error from the paper is $1.25$% with the same architecture and ~hyperparameters.
+Error from the paper was $1.25$% with the same architecture and ~hyperparameters.
 
 
 ### CIFAR-10
@@ -124,7 +124,7 @@ Evaluated on the test set:
 | Conv Net + max pooling + dropout fully connected layers (torch) | 15.31 |  84.69 |
 | Conv Net + max pooling + dropout fully connected layers (diy) | 15.91  |  84.09 |
 
-Error from the paper is $14.32$% with the same architecture and ~hyperparameters.
+Error from the paper was $14.32$% with the same architecture and ~hyperparameters.
 
 ## Citations
 
