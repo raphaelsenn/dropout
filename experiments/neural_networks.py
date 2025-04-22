@@ -98,14 +98,12 @@ class ConvNetDropoutTorch(nn.Module):
             nn.Dropout(0.2),
             nn.Conv2d(in_channels=3, out_channels=96, kernel_size=5, stride=1, padding=2),
             nn.ReLU(),
-            nn.MaxPool2d(kernel_size=3, stride=2),
-            nn.Dropout(0.25))
+            nn.MaxPool2d(kernel_size=3, stride=2))
 
         self.conv2 = nn.Sequential(
             nn.Conv2d(in_channels=96, out_channels=128, kernel_size=5, stride=1, padding=2),
             nn.ReLU(), 
-            nn.MaxPool2d(kernel_size=3, stride=2),
-            nn.Dropout(0.25))
+            nn.MaxPool2d(kernel_size=3, stride=2))
 
         self.conv3 = nn.Sequential(
             nn.Conv2d(in_channels=128, out_channels=256, kernel_size=5, stride=1, padding=2),
@@ -152,14 +150,12 @@ class ConvNetDropoutDIY(nn.Module):
             Dropout(0.8),
             nn.Conv2d(in_channels=3, out_channels=96, kernel_size=5, stride=1, padding=2),
             nn.ReLU(),
-            nn.MaxPool2d(kernel_size=3, stride=2),
-            Dropout(0.75))
+            nn.MaxPool2d(kernel_size=3, stride=2))
 
         self.conv2 = nn.Sequential(
             nn.Conv2d(in_channels=96, out_channels=128, kernel_size=5, stride=1, padding=2),
             nn.ReLU(), 
-            nn.MaxPool2d(kernel_size=3, stride=2),
-            Dropout(0.75))
+            nn.MaxPool2d(kernel_size=3, stride=2))
 
         self.conv3 = nn.Sequential(
             nn.Conv2d(in_channels=128, out_channels=256, kernel_size=5, stride=1, padding=2),

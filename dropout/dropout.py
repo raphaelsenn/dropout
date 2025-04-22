@@ -8,7 +8,7 @@ class Dropout(nn.Module):
     input tensor with probability 1 - p (retaining elements from the input tensor with probability p).
 
     The zeroed element are chosen indepedently for each forward pass, they are sampled
-    from a bernoulli distribution (Bernoulli(p)).    
+    from a bernoulli distribution (r ~ Bernoulli(p)).
 
     Dropout prevents overfitting and provides a way of approximately combining
     exponentially many different neural network architectures efficiently.
@@ -17,7 +17,7 @@ class Dropout(nn.Module):
         p: probability of an element to be retained. Default: 0.5
     """
 
-    def __init__(self, p: float=0.5, inplace: bool=False):
+    def __init__(self, p: float=0.5):
         super().__init__()
         self.register_buffer('p', torch.tensor([p])) 
 
