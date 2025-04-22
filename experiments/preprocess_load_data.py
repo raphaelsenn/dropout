@@ -56,13 +56,12 @@ def load_cifar10(root: str, batch_size: int=64) -> tuple[DataLoader, DataLoader]
         train=False,
         download=True)
 
-    if not os.path.isfile('cifar10_train.pt'):
+    if not (os.path.isfile('cifar10_train.pt') and os.path.isfile('cifar10_test.pt')):
         print(f'Applying ZCA whitening to CIFAR10_train') 
         X_train = zca_whitening(cifar10_train.data)
         y_train = torch.tensor(cifar10_train.targets).long()
         torch.save((X_train, y_train), 'cifar10_train.pt')
 
-    if not os.path.isfile('cifar10_test.pt'):
         print(f'Applying ZCA whitening to CIFAR10_test') 
         X_test = zca_whitening(cifar10_test.data)
         y_test = torch.tensor(cifar10_test.targets).long()

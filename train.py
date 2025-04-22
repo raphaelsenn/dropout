@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
-from experiments.maxnorm import MaxNorm                         # MaxNorm for regularization
+from experiments.maxnorm import MaxNorm                         # max-norm for regularization
 
 from experiments.neural_networks import DropoutMLPtorch         # uses pytorch's nn.Dropout method
 from experiments.neural_networks import DropoutMLPdiy           # uses diy implementation of dropout
@@ -22,11 +22,12 @@ DATASET = 'cifar10'             # mnist or cifar10
 DROPOUT = 'torch'               # torch or diy
 ROOT_DATA = DATASET + '/'
 
-epochs = 8                     # number of iterations
+epochs = 100                    # number of iterations
 learning_rate = 0.001           # learning rate
 momentum = 0.95                 # momentum for SGD
 lamb = 0.001                    # l2 penalty on the weights
-batch_size = 64                 # batch size
+c = 4                           # max-norm weight constraint (i did not use maxnorm on MNIST)
+batch_size = 32                 # batch size
 seed = 42                       # random seed
 num_threads = 10
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
@@ -70,7 +71,7 @@ def train(
     
     optimizer = torch.optim.SGD(params=model.parameters(), lr=lr, momentum=momentum)
     criterion = nn.CrossEntropyLoss()
-    norm = MaxNorm(max_value=4)
+    norm = MaxNorm(max_value=c)
 
     for epoch in range(epochs):
 
