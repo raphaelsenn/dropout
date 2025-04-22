@@ -111,8 +111,9 @@ Used settings:
 ```python
 epochs = 48 
 batch_size = 64
-epsilon = 10e-7         # ZCA whitening
-lamb = 0.001            # L2 regularization
+epsilon = 10e-7                 # ZCA whitening
+lamb = 0.001                    # L2 regularization
+p = (0.2, 0, 0, 0.5, 0.5, 0.5)  # dropout rates (retaining a unit)
 torch.manual_seed(seed=42)
 criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.SGD(lr=0.001, momentum=0.95)
