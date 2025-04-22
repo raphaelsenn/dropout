@@ -117,7 +117,7 @@ p = (0.2, 0, 0, 0.5, 0.5, 0.5)  # dropout rates (retaining a unit)
 torch.manual_seed(seed=42)
 criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.SGD(lr=0.001, momentum=0.95)
-MaxNorm(max_value=4)    # max-norm weight constraint
+MaxNorm(max_value=4)            # max-norm weight constraint
 ```
 
 Evaluated on the test set:
