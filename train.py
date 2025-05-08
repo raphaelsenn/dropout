@@ -89,7 +89,7 @@ def train(
             
             # calculate cross-entropy
             loss = criterion(pred, y_batch)
-            total_loss += loss.item()
+            total_loss += loss.item() * X_batch.size(0)
             
             # error measures
             correct += torch.sum(y_batch == torch.argmax(pred, dim=1))
